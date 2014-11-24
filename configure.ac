@@ -3,16 +3,16 @@
 
 AC_INIT([Shebang Helper], [0.1.0], [demetriobenour@gmail.com])
 AC_CONFIG_SRCDIR([src/shebang-helper.c])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 
 # Automake
 AC_CONFIG_FILES([Makefile])
-
 
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
+AM_PROG_CC_C_O
 
 # Checks for libraries.
 
