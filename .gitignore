@@ -12,9 +12,11 @@
 
 
 # Autoconf-generated files
+.deps/
 aclocal.m4
 autom4te.cache/
 autoscan.log
+compile
 config.h
 config.h.in
 config.status
@@ -26,6 +28,8 @@ install-sh
 Makefile
 Makefile.in
 missing
+src/.dirstamp
+stamp-h1
 
 # Build directory
 build/
