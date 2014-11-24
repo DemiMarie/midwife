@@ -1,0 +1,6 @@
+2014-11-23  Demetrios Obenour  <demetriobenour@gmail.com>
+
+	* src/shebang-helper.c Begun work -- this file compiles, but does not link yet.
+
+Copyright 2014 Demetrios Obenour. This file may be copyied and distributed, with or without modifications, subject to the MIT license.
+
