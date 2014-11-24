@@ -3,28 +3,29 @@
 *\#
 
 # Object files
-*.o
 *.exe
+*.o
 
 # Generated documentation
-*.pdf
 *.dvi
+*.pdf
 
 
 # Autoconf-generated files
+aclocal.m4
+autom4te.cache/
+autoscan.log
 config.h
 config.h.in
-configure
 config.status
-autoscan.log
 config.log
-Makefile
-autom4te.cache/
+configure.scan
+configure
 depcomp
 install-sh
+Makefile
+Makefile.in
 missing
-aclocal.m4
-configure.scan
 
 # Build directory
 build/
