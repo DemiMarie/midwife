@@ -5,6 +5,7 @@
 # Object files
 *.exe
 *.o
+/shebang-helper
 
 # Generated documentation
 *.dvi
