@@ -90,6 +90,7 @@ void debugPrint(char ** buffer) {
 int main(int argc, char **argv) {
   char ** dest[128];
   char **buffer;
+  program_name = argv[0];
   size_t bufsize;
   if (argc < 3) {
     usage();
