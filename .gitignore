@@ -1,6 +1,6 @@
 # Backup suffixes
-*~
 *\#
+*~
 
 # Object files
 *.exe
@@ -14,20 +14,20 @@
 
 # Autoconf-generated files
 .deps/
+Makefile
+Makefile.in
 aclocal.m4
 autom4te.cache/
 autoscan.log
 compile
 config.h
 config.h.in
-config.status
 config.log
-configure.scan
+config.status
 configure
+configure.scan
 depcomp
 install-sh
-Makefile
-Makefile.in
 missing
 src/.dirstamp
 stamp-h1
