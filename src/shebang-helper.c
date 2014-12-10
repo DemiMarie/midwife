@@ -79,6 +79,7 @@ void usage(void) {
   fprintf(stderr, "usage: %s (percent-encoded argument) filename ...\n",
           program_name);
 }
+#if 0
 void debugPrint(char ** buffer);
 void debugPrint(char ** buffer) {
   char *string;
@@ -86,7 +87,7 @@ void debugPrint(char ** buffer) {
     fputs(string, stderr);
   }
 }
-
+#endif
 int main(int argc, char **argv) {
   char ** dest[128];
   char **buffer;
@@ -96,29 +97,32 @@ int main(int argc, char **argv) {
     usage();
     return 127;
   }
-  else {
-    size_t numextraargs = 1;
-    char *result = 0;
-    {
-      char *ptr, value = '\0';
-      for (ptr = argv[1], value = '\0'; (value = *ptr++);) {
-        if ('&' == value) {
-          ++numextraargs;
-        }
+  size_t numextraargs = 1;
+  char *result = argv[1];
+  {
+    char *ptr = argv[1];
+    char value;
+    while ((value = *ptr++)) {
+      if ('&' == value) {
+        ++numextraargs;
       }
-      result = argv[1];
     }
-
-
-    /* Subtract one argument for our one name and another for the command string */
-    bufsize = (argc + numextraargs - 1);
-    buffer = bufsize <= 128 ? dest : malloc(bufsize * sizeof(char *));
-    /* fprintf(stderr, "%zu\n", numextraargs); 
-    // Parse arguments */
-    { int value = parseArgs(argv[1], buffer, result); if (value) return value; }
-    fflush(stderr);
-    memcpy(buffer + numextraargs, argv + 2, sizeof(char *) * (argc - 1));
-    execv(buffer[0], buffer);
   }
+
+
+  /* Subtract one argument for our one name
+   * and another for the command string */
+  bufsize = (argc + numextraargs - 1);
+  buffer = bufsize <= 128 ? dest : malloc(bufsize * sizeof(char *));
+  /* Parse arguments */
+  {
+    int value = parseArgs(argv[1], buffer, result);
+    if (value) {
+      return value;
+    }
+  }
+  fflush(stderr);
+  memcpy(buffer + numextraargs, argv + 2, sizeof(char *) * (argc - 1));
+  execv(buffer[0], buffer);
   die("Failed to exec!\n");
 }
