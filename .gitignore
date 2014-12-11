@@ -5,7 +5,10 @@
 # Object files
 *.exe
 *.o
-/shebang-helper
+midwife
+
+# Tags file
+TAGS
 
 # Generated documentation
 *.dvi
