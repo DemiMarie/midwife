@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([Shebang Helper], [0.1.0], [demetriobenour@gmail.com])
-AC_CONFIG_SRCDIR([src/shebang-helper.c])
+AC_INIT([Midwife], [0.1.0], [demetriobenour@gmail.com])
+AC_CONFIG_SRCDIR([src/midwife.c])
 AM_INIT_AUTOMAKE([subdir-objects])
 
 # Automake

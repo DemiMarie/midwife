@@ -1,2 +1,2 @@
-bin_PROGRAMS = shebang-helper
-shebang_helper_SOURCES = src/shebang-helper.c
+bin_PROGRAMS = midwife
+midwife_SOURCES = src/midwife.c
