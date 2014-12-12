@@ -1,29 +1,36 @@
-#define _POSIX_C_SOURCE 200809L
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#ifdef __GNUC__
-# define NORETURN(a) a __attribute__((noreturn))
-#else
-# if defined __STDC_VERSION__
-#  if __STDC_VERSION__ >= 201112L
-#   define NORETURN(a) _Noreturn a
-#  endif
-# endif
+
+#ifndef _POSIX_C_SOURCE
+# define _POSIX_C_SOURCE 200809L
 #endif
-#ifndef NORETURN
-# define NORETURN(a) a
-#endif
+
 #ifndef __cplusplus
 # include <stdbool.h>
 # include <iso646.h>
 #endif
-void NORETURN(die(const char *arg));
-void die(const char *arg) {
+
+#include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
+
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+# define NORETURN _Noreturn
+#elif defined(__cplusplus) && __cplusplus >= 201103L
+# define NORETURN [[noreturn]]
+#elif defined(__GNUC__) && __GNUC__ > 2 ||      \
+  (__GNUC__ == 2 && __GNUC_MINOR__ >= 5)
+# define NORETURN __attribute__((noreturn))
+#elif !defined(NORETURN)
+# define NORETURN
+#endif
+
+static NORETURN void die (const char *arg);
+static void die(const char *arg) {
   fputs(arg, stderr);
   exit(127);
 }
@@ -88,8 +95,36 @@ void debugPrint(char ** buffer) {
   }
 }
 #endif
+
+void parseLines (char * numLines, char *fileName) {
+  char *end;
+  FILE *fileptr = fopen(fileName, "r");
+  if ((FILE*)0 == fileptr) {
+    die("Cannot open input file\n");
+  }
+  errno = 0;
+  char *ptr = 0;
+  unsigned long int numlines = strtoul(ptr, &end, 10);
+  if (0 != errno || '\0' != *end) {
+    die("bad number of lines");
+  }
+  
+  size_t length;
+  off_t linesize;
+  for (int i = 0; i < numlines; ++i) {
+    linesize = getline(&ptr, &length, fileptr);
+  }
+  {
+    char *begin = strstr(ptr, "-*-");
+    if (NULL == begin) {
+      die("missing -*- start token");
+    }
+
+  }
+}
+
 int main(int argc, char **argv) {
-  char ** dest[128];
+  char * dest[128];
   char **buffer;
   program_name = argv[0];
   size_t bufsize;
@@ -98,13 +133,16 @@ int main(int argc, char **argv) {
     return 127;
   }
   size_t numextraargs = 1;
-  char *result = argv[1];
   {
     char *ptr = argv[1];
     char value;
-    while ((value = *ptr++)) {
-      if ('&' == value) {
-        ++numextraargs;
+    if (0 == strncmp(ptr, "-n", 2)) {
+      
+    } else {
+      while ((value = *ptr++)) {
+        if ('&' == value) {
+          ++numextraargs;
+        }
       }
     }
   }
@@ -113,9 +151,13 @@ int main(int argc, char **argv) {
   /* Subtract one argument for our one name
    * and another for the command string */
   bufsize = (argc + numextraargs - 1);
-  buffer = bufsize <= 128 ? dest : malloc(bufsize * sizeof(char *));
+  buffer = bufsize <= 128 ? dest : (char**)calloc(bufsize, sizeof(char *));
+  if (0 == buffer) {
+    die("Error allocating memory\n");
+  }
   /* Parse arguments */
   {
+    char *result = argv[1];
     int value = parseArgs(argv[1], buffer, result);
     if (value) {
       return value;
