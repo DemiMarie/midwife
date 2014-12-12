@@ -1,6 +1,7 @@
 # Backup suffixes
-*\#
+\#*\#
 *~
+.\#*
 
 # Object files
 *.exe
