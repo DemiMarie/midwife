@@ -1,0 +1,84 @@
+#include <string>
+#include <vector>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <cstdio>
+#define INDEX(n) (input[n] - '0')
+[[noreturn]] bool error(const unsigned char *msg);
+bool error(const unsigned char *msg) {
+  fprintf(stderr, "Syntax error for input '%s'\n", msg);
+  exit(127);
+}
+typedef std::vector<std::string> stringVector;
+stringVector lexer (unsigned char *input, stringVector arguments);
+stringVector lexer (unsigned char *input, stringVector arguments) {
+  stringVector buffer = std::vector<std::string>(1);
+  std::string *ptr = buffer.data();
+  const unsigned char *const end = input + strlen(reinterpret_cast<char*>(input));
+  const size_t maxInput = arguments.size();
+  bool split = true;
+  unsigned char *YYMARKER, *YYCTXMARKER;
+  while (true) {
+  /*!re2c
+    re2c:define:YYCTYPE  = "unsigned char";
+    re2c:define:YYCURSOR = input;
+    re2c:define:YYLIMIT  = end;
+    re2c:indent:top      = 1;
+    re2c:indent:string   = "  ";
+    re2c:yyfill:enable   = 0;
+    "\\x"[0-9a-fA-F][0-9a-fA-F] {
+      unsigned char temp = input[4];
+      input[4] = '\0';
+      ptr->push_back(strtoul((char *)input + 2, (char**)0, 16));
+      input[4] = temp;
+    }
+    "\\"[0-3][0-7][0-7] { ptr->push_back(INDEX(3) + 8*(INDEX(2) + 8 * INDEX(1))); }
+    "\\"[$"\\]          { ptr->push_back(input[1]); }
+    "\\n"               { ptr->push_back('\n'); }
+    "\\t"               { ptr->push_back('\t'); }
+    "\\v"               { ptr->push_back('\v'); }
+    "\\f"               { ptr->push_back('\f'); }
+    "\\r"               { ptr->push_back('\r'); }
+    "\\a"               { ptr->push_back('\a'); }
+    "\\b"               { ptr->push_back('\b'); }
+    "${"[0-9]+"}"       {
+      errno = 0;
+      unsigned long value = strtoul((char *)input + 2, (char**)0, 10);
+      if (0 == errno && maxInput > value) {
+        ptr->operator += (arguments[value]);
+      }
+    }
+    "$@" {
+      ptr->operator += (arguments[0]);
+      for (size_t i = 1; i < maxInput; ++i) {
+        buffer.push_back(arguments[i]);
+      }
+      ptr = &buffer.back();
+    }
+    [\\$] { error(input); }
+    ["] { split = ~split; }
+    [ \t]*"\000" { if (split) {
+      return buffer;
+    } else {
+      error(input);
+    } }
+    [ \t]/[^ \t\000] {
+      if (split) {
+        buffer.push_back(std::string());
+        ptr = &buffer.back();
+      } else {
+        ptr->push_back(*input);
+      }
+    }
+    [ \t] { if (!split) { ptr->push_back(*input); } }
+    [^] :=  ptr->push_back(*input); 
+*/
+  }
+}
+/*
+ * Local Variables:
+ * mode: c++
+ * coding: utf-8
+ * End:
+ */
