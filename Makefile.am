@@ -1,5 +1,5 @@
 bin_PROGRAMS= midwife
-midwife_SOURCES=src/midwife.cpp src/lexer.cpp
+midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp
 EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in
 MAINTAINERCLEANFILES=src/lexer.cpp
 AM_CPPFLAGS ='-I@srcdir@/src'
