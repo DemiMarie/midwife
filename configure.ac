@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_INIT([Midwife], [0.1.0], [demetriobenour@gmail.com])
-AC_CONFIG_SRCDIR([src/midwife.c])
+AC_CONFIG_SRCDIR([src/midwife.cpp])
 AM_INIT_AUTOMAKE([subdir-objects])
 
 AC_CONFIG_HEADERS([config.h])
