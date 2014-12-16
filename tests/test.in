@@ -1,0 +1,2 @@
+#!../midwife -n2
+# -*- /usr/bin/printf %s\n "$@"
