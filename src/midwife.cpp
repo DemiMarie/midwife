@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-#include "./lexer.hpp"
+#include "lexer.hpp"
 
 
 void die(const char *arg) {
