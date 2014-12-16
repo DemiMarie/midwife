@@ -1,3 +1,4 @@
+#include "lexer.hpp"
 #include <string>
 #include <vector>
 #include <cstdlib>
@@ -5,20 +6,16 @@
 #include <cerrno>
 #include <cstdio>
 #define INDEX(n) (input[n] - '0')
-[[noreturn]] bool error(const unsigned char *msg);
 bool error(const unsigned char *msg) {
   fprintf(stderr, "Syntax error for input '%s'\n", msg);
   exit(127);
 }
-typedef std::vector<std::string> stringVector;
-stringVector lexer (unsigned char *input, stringVector arguments);
-stringVector lexer (unsigned char *input, stringVector arguments) {
+stringVector lexer (unsigned char *input, int argc, char ** argv) {
   stringVector buffer = std::vector<std::string>(1);
   std::string *ptr = buffer.data();
-  const unsigned char *const end = input + strlen(reinterpret_cast<char*>(input));
-  const size_t maxInput = arguments.size();
+  const unsigned char *const end = input + strlen((char*)(input));
   bool split = true;
-  unsigned char *YYMARKER, *YYCTXMARKER;
+  unsigned char *YYMARKER = 0, *YYCTXMARKER = 0;
   while (true) {
   /*!re2c
     re2c:define:YYCTYPE  = "unsigned char";
@@ -42,27 +39,35 @@ stringVector lexer (unsigned char *input, stringVector arguments) {
     "\\r"               { ptr->push_back('\r'); }
     "\\a"               { ptr->push_back('\a'); }
     "\\b"               { ptr->push_back('\b'); }
-    "${"[0-9]+"}"       {
+    "${"[0-9]+"}" {
       errno = 0;
       unsigned long value = strtoul((char *)input + 2, (char**)0, 10);
-      if (0 == errno && maxInput > value) {
-        ptr->operator += (arguments[value]);
+      if (0 == errno && argc > value) {
+        ptr->operator += (argv[value]);
       }
     }
+    "$"[0-9] {
+      unsigned char value = input[1] - '0';
+      if (argc > value) {
+        ptr->operator += (argv[value]);
+      } 
+    }
     "$@" {
-      ptr->operator += (arguments[0]);
-      for (size_t i = 1; i < maxInput; ++i) {
-        buffer.push_back(arguments[i]);
+      ptr->operator += (argv[0]);
+      for (size_t i = 1; i < argc; ++i) {
+        buffer.push_back(argv[i]);
       }
       ptr = &buffer.back();
     }
     [\\$] { error(input); }
     ["] { split = ~split; }
-    [ \t]*"\000" { if (split) {
-      return buffer;
-    } else {
-      error(input);
-    } }
+    [ \t]*"\000" {
+      if (split) { 
+        return buffer;
+      } else {
+        error(input);
+      }
+    }
     [ \t]/[^ \t\000] {
       if (split) {
         buffer.push_back(std::string());
@@ -72,7 +77,7 @@ stringVector lexer (unsigned char *input, stringVector arguments) {
       }
     }
     [ \t] { if (!split) { ptr->push_back(*input); } }
-    [^] :=  ptr->push_back(*input); 
+    [^] { ptr->push_back(*input); }
 */
   }
 }
