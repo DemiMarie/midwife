@@ -14,6 +14,7 @@
   re2c:define:YYCURSOR    = input;
   re2c:define:YYLIMIT     = end;
   re2c:define:YYMARKER    = marker;
+  re2c:define:YYCTXMARKER = yymarker;
   re2c:indent:top         = 1;
   re2c:indent:string      = "    ";
   re2c:yyfill:enable      = 0;
@@ -23,12 +24,12 @@ bool error(const char *msg) {
   exit(127);
 }
 stringVector lexer (char *input, size_t argc, char ** argv) {
-  fputs(input, stderr);
-  stringVector buffer = std::vector<std::string>(1);
+  //fputs(input, stderr);
+  stringVector buffer = std::vector<std::string>();
   std::string *ptr = buffer.data();
   const char *const end = input + strlen(input);
   bool split = true;
-  char *marker = (char *)0xAEFDC;
+  char *marker = (char *)0xAEFDC, *yymarker = (char *) 0xAEFDC;
   while (true) {
     /*!re2c
     "\\x"[0-9a-fA-F][0-9a-fA-F] {
@@ -74,7 +75,7 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
     [$\\] {
       error(input);
     }
-    ["] { split = ~split; continue; }
+    "\"" { split = ~split; continue; }
     "\000" {
       if (split) {
         return buffer;
@@ -83,17 +84,17 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
       }
     }
 
-    [ \t] {
-      switch (input[1]) {
-        default: if (split) {
-          buffer.push_back(std::string());
-          ptr = &buffer.back();
-          break;
-        }
-        case '\t':
-        case '\000':
-        case ' ': ptr->push_back(*input);
+    [ \t]/[^ \t\000] {     
+      if (split) {
+        buffer.push_back(std::string());
+        ptr = &buffer.back();
+      } else {
+        ptr->push_back(*input);
       }
+      continue;
+    }
+    [ \t] {
+      if (!split) { ptr->push_back(yych); }
       continue;
     }
     [^] { ptr->push_back(yych); continue; }
