@@ -6,11 +6,16 @@
 #include <cerrno>
 #include <cassert>
 #include <cstdio>
-#define INDEX(n) (input[n] - '0')
+#include <climits>
+int int_of_octal (char * arg);
+int int_of_octal (char * arg) {
+  return (static_cast<int>(arg[2])
+          + 8*(static_cast<int>(arg[1])
+               + 8 * static_cast<int>(*arg))) - 73 * '0';
+}
 //#define YYFILL(n) die("internal error (this is a bug)\n");
 /*!re2c
   re2c:define:YYCTYPE     = "char";
-  re2c:cond:goto          = continue;
   re2c:define:YYCURSOR    = input;
   re2c:define:YYLIMIT     = end;
   re2c:define:YYMARKER    = marker;
@@ -19,29 +24,42 @@
   re2c:indent:string      = "    ";
   re2c:yyfill:enable      = 0;
 */
+bool error(const char *msg);
 bool error(const char *msg) {
   fprintf(stderr, "Syntax error for input '%s'\n", msg);
   exit(127);
 }
-stringVector lexer (char *input, size_t argc, char ** argv) {
+using std::string;
+stringVector lexer (char *input, size_t length,
+                    size_t argc, char ** argv);
+stringVector lexer (char *input, size_t length,
+                    size_t argc, char ** argv) {
   //fputs(input, stderr);
-  stringVector buffer = std::vector<std::string>();
-  std::string *ptr = buffer.data();
-  const char *const end = input + strlen(input);
+  stringVector buffer = std::vector<string>();
+  string *ptr = buffer.data();
+  const char *const end = input + length;
   bool split = true;
-  char *marker = (char *)0xAEFDC, *yymarker = (char *) 0xAEFDC;
+
+  // The wierd values are to force a segfault if the pointers
+  // are dereferenced without re2c having initialized them
+  char *marker = (char *)0xAEFDC,
+      *yymarker = (char *) 0xAEFDC;
   while (true) {
     /*!re2c
     "\\x"[0-9a-fA-F][0-9a-fA-F] {
-      const char temp = input[4];
-      input[4] = '\0';
-      ptr->push_back(strtoul(input + 2, 0, 16));
-      input[4] = temp;
+      const char temp = *input;
+      *input = '\0';
+      unsigned long i = strtoul(input - 2, 0, 16);
+      ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
+      *input = temp;
+      continue;
     }
     "\\" [0-3][0-7][0-7] {
-      ptr->push_back(INDEX(3) + 8*(INDEX(2) + 8 * INDEX(1)));
+      int i = int_of_octal(input - 3);
+      ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
+      continue;
     }
-    "\\" [$"\\]  { ptr->push_back(input[1]); }
+    "\\" [$"\\]  { ptr->push_back(input[1]); continue; }
     "\\n"      { ptr->push_back('\n'); continue; }
     "\\t"      { ptr->push_back('\t'); continue; }
     "\\v"      { ptr->push_back('\v'); continue; }
@@ -51,7 +69,7 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
     "\\b"      { ptr->push_back('\b'); continue; }
     "${"[0-9]+"}" {
       errno = 0;
-      unsigned long value = strtoul(input + 2, 0, 10);
+      unsigned long value = strtoul((char *)input + 2, 0, 10);
       if (0 == errno && argc > value) {
         ptr->operator += (argv[value]);
       }
@@ -75,7 +93,10 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
     [$\\] {
       error(input);
     }
-    "\"" { split = ~split; continue; }
+    "\"" {
+      split = ~split;
+      continue;
+    }
     "\000" {
       if (split) {
         return buffer;
@@ -86,7 +107,7 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
 
     [ \t]/[^ \t\000] {     
       if (split) {
-        buffer.push_back(std::string());
+        buffer.push_back(string());
         ptr = &buffer.back();
       } else {
         ptr->push_back(*input);
@@ -100,7 +121,6 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
     [^] { ptr->push_back(yych); continue; }
     */
   }
-  die("unreachable (this is a bug)\n");
 }
 /*
  * Local Variables:
