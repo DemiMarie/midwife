@@ -10,8 +10,9 @@
 #endif
 #include <vector>
 #include <string>
-NORETURN bool error(const unsigned char *msg);
-typedef std::vector<std::string> stringVector;
-stringVector lexer (unsigned char *input, int argc, char ** argv);
+NORETURN bool error(const char *msg);
+typedef std::vector<std::basic_string<char> > stringVector;
+stringVector lexer (char *input, size_t length,
+                    size_t argc, char ** argv);
 
 NORETURN void die (const char *arg);
