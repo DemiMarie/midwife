@@ -33,13 +33,17 @@ if test "$interpval" = no; then
   AC_MSG_ERROR([Your system does not support the @%:@! line])
 fi
 
-extradir=
-if test "$srcdir" != .; then
-  extradir="'-I$srcdir/src'"
-fi
+# Note that between the / and ' on the fourth line of the sed
+# script is a tab, not a space
+printf=`which printf| sed 's/[\\\\\"\$]/\\\\&/g
+s/\\\$/&&/g
+'"s/'/'\\\\\\\\''/g
+1 !s/^/ '/
+\$ !s/'\$/\\\\\\\\n'\\\\\\\\/g'"`
+AC_SUBST([printf])
 
-AC_SUBST([extradir])
 
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([tests/test])
 
 AC_OUTPUT
