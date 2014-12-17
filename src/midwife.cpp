@@ -66,47 +66,63 @@ int parseArgs(char *string, char ** buffer, char *dest) {
     }
   }
 }
+void debugPrint(const char ** buffer);
+
+NORETURN void launch (stringVector stringVect);
+void launch (stringVector stringVect) {
+  size_t end = stringVect.size();
+  const char ** newargs = new const char*[end + 1];
+  for (size_t i = 0; i < end; ++i) {
+    newargs[i] = stringVect[i].c_str();
+  }
+  newargs[end] = (char *)0;
+  //  debugPrint(newargs);
+  execv((const char *)newargs[0], (char * const *)newargs);
+  die("Failed to exec!\n");
+}
 void usage(void);
 void usage(void) {
   fprintf(stderr, "usage: %s (percent-encoded argument) filename ...\n",
           program_name);
 }
-#if 0
-void debugPrint(char ** buffer);
-void debugPrint(char ** buffer) {
-  char *string;
+void debugPrint(const char ** buffer) {
+  const char *string;
   while ((string = *buffer++)) {
     fputs(string, stderr);
+    fputc('\n', stderr);
   }
 }
-#endif
 
-enum state { NOTHING, DASH, STAR_DASH, DASH_STAR_DASH };
-
+enum state { NOTHING, DASH, STAR_DASH };
+NORETURN void parseLines (char * numLines, int argc, char **argv);
 void parseLines (char * numLines, int argc, char **argv) {
-  char *end;
-  FILE *fileptr = fopen(argv[1], "r");
+  FILE *fileptr = fopen((char*)(argv[0]), "r");
   if ((FILE*)0 == fileptr) {
     die("Cannot open input file\n");
   }
   errno = 0;
   char *ptr = 0;
-  unsigned long int numlines = strtoul(ptr, &end, 10);
-  if (0 != errno || '\0' != *end) {
-    die("bad number of lines");
+  unsigned long int numlines;
+  {
+    char *end;
+    numlines = strtoul(numLines, &end, 10);
+    if (0 != errno || '\0' != *end) {
+      die("bad number of lines\n");
+    }
   }
 
   size_t length;
   off_t linesize;
-  for (int i = 0; i < numlines; ++i) {
+  for (size_t i = 0; i < numlines; ++i) {
     linesize = getline(&ptr, &length, fileptr);
   }
   char *begin = strstr(ptr, "-*-");
   if (NULL == begin) {
-    die("missing -*- start token");
+    die("missing -*- start token\n");
   }
   else {
-    begin += 3;
+    begin += 2;
+    *begin = ' ';
     char * end = strlen(begin) + begin - 1;
     enum state status = NOTHING;
     for (char* i = end; i != begin; --i) {
@@ -122,19 +138,11 @@ void parseLines (char * numLines, int argc, char **argv) {
         case STAR_DASH:
           if ('-' == *i) {
             *i = '\0';
-            stringVector stringVect = lexer((unsigned char *)begin, argc, argv);
-            size_t end = stringVect.size();
-            const char ** newargs = new const char*[end + 1];
-            for (size_t i = 0; i < end; ++i) {
-              newargs[i] = stringVect[i].data();
-            }
-            newargs[end] = (char *)0;
-            execv(newargs[0], (char * const *)newargs);
-            die("Failed to exec!\n");
+            launch(lexer(begin, i - begin, argc, argv));
           }
-        default: die("impossible (this is a bug)");
       }
     }
+    die("No -*- end token found\n");
   }
 }
 
