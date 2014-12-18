@@ -1,9 +1,7 @@
-m4_define([AT_PACKAGE_STRING],
-          [[Midwife - a shebang script helper.]])
-m4_define([AT_PACKAGE_BUGREPORT],
-          [[demetriobenour@gmail.com]])
+m4_include([./package.m4])
 AT_INIT([[Initial tests]])
-AT_COPYRIGHT([[Copyright © 2014 Demetrios Obenour. See LICENSE for copying conditions.]])
+AT_COPYRIGHT([[Copyright © 2014 Demetrios Obenour.
+Licensed under the MIT license; see COPYING for its terms.]])
 AT_COLOR_TESTS
 AT_BANNER([[Initial test group]])
 AT_SETUP([[Basic file test]])
