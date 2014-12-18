@@ -3,7 +3,7 @@ bin_PROGRAMS= midwife
 midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp 
 EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in tests/testsuite.at \
 	   tests/testsuite
-DISTCLEANFILES=tests/testsuite.log
+DISTCLEANFILES=testsuite.log atlocal atconfig
 MAINTAINERCLEANFILES=src/lexer.cpp tests/test configure Makefile.in \
 		     aclocal.m4 package.m4
 AM_CPPFLAGS ='-I@srcdir@/src'
@@ -27,3 +27,6 @@ src/lexer.cpp: src/lexer.cpp.in
 
 check:
 	'@srcdir@/tests/testsuite'
+
+installcheck:
+	'@srcdir@/tests/testsuite' 'midwife_bindir=$(bindir)'
