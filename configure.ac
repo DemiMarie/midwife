@@ -1,7 +1,20 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([Midwife], [0.1.0], [demetriobenour@gmail.com])
+AC_INIT([Midwife], [0.1.0], [demetriobenour@gmail.com],
+	[midwife], [https://github.com/drbo/shebang-helper])
+
+dnl Automatically update package.m4 as a side affect
+dnl of running autoconf 
+dnl Quadrigraphs will be processed by Autotest,
+dnl which reads package.m4 
+m4_pushdef([tmpmacro],
+	  [AS_ESCAPE(m4_dquote([m4_define([AT_PACKAGE_$1],
+          ]m4_dquote(m4_defn([AC_PACKAGE_$1]))[)]),["\$`"])])
+m4_syscmd([printf %s\\n] m4_map_args_sep(["tmpmacro(],[)"],[ ],
+[NAME],[TARNAME],[VERSION],[STRING],[BUGREPORT],[URL]) [>package.m4])
+m4_popdef([tmpmacro])
+
 AC_CONFIG_SRCDIR([src/midwife.cpp])
 AM_INIT_AUTOMAKE([subdir-objects])
 
