@@ -22,11 +22,4 @@ src/lexer.cpp: src/lexer.cpp.in
 	fi
 
 check:
-	dir=$${RANDOM}tmp$$$$; \
-	mkdir "./$$dir" && chmod 700 "./$$dir" && \
-	echo >$$dir/test && chmod 700 "./$$dir/test" && \
-	printf '#! ../midwife -n2\n%s\n' \
-	';; -*-@printf@  "%s" "aasdf\n\x0ad\012aa\n" -*-' >$$dir/test && \
-	"$$dir/test" >$$dir/test_output && \
-	printf 'aasdf\n\x0ad\012aa\n' | cmp - "$$dir/test_output"; \
-	status=$$?; rm -rf -- "$$dir"; exit $$status
+	'@srcdir@/tests/testsuite'
