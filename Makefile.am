@@ -1,3 +1,4 @@
+# @configure_input@
 bin_PROGRAMS= midwife
 midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp 
 EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in tests/testsuite.at \
