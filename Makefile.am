@@ -4,7 +4,7 @@ EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in tests/testsuite.at \
 	   tests/testsuite
 DISTCLEANFILES=tests/testsuite.log
 MAINTAINERCLEANFILES=src/lexer.cpp tests/test configure Makefile.in \
-		     aclocal.m4
+		     aclocal.m4 package.m4
 AM_CPPFLAGS ='-I@srcdir@/src'
 
 clean-local: clean-local-lexer
