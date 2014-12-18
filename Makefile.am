@@ -1,6 +1,8 @@
 bin_PROGRAMS= midwife
 midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp 
-EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in
+EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in tests/testsuite.at \
+	   tests/testsuite
+DISTCLEANFILES=tests/testsuite.log
 MAINTAINERCLEANFILES=src/lexer.cpp tests/test configure Makefile.in \
 		     aclocal.m4
 AM_CPPFLAGS ='-I@srcdir@/src'
