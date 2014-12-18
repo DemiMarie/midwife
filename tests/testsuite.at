@@ -1,0 +1,25 @@
+m4_define([AT_PACKAGE_STRING],
+          [[Midwife - a shebang script helper.]])
+m4_define([AT_PACKAGE_BUGREPORT],
+          [[demetriobenour@gmail.com]])
+AT_INIT([[Initial tests]])
+AT_COPYRIGHT([[Copyright © 2014 Demetrios Obenour. See LICENSE for copying conditions.]])
+AT_COLOR_TESTS
+AT_BANNER([[Initial test group]])
+AT_SETUP([[Basic file test]])
+AT_DATA([[script]],
+        [[@%:@! ../../midwife -n2
+]])
+[{ printf ';; -*-"';
+which printf | sed 's/[\\"$]/\\&/g
+$ !s/$/\\n/
+' | tr -d '\n'
+} >> script
+chmod u+x script]
+AS_ECHO([['"  "%s" "aasdf\n\x0ad\012aa\na" -*- a']]) >> [script]
+AT_CHECK([[./script]],[0],[[aasdf
+
+d
+aa
+a]],[])
+AT_CLEANUP
