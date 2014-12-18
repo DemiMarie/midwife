@@ -7,13 +7,14 @@ AC_INIT([Midwife], [0.1.0], [demetriobenour@gmail.com],
 dnl Automatically update package.m4 as a side affect
 dnl of running autoconf 
 dnl Quadrigraphs will be processed by Autotest,
-dnl which reads package.m4 
-m4_pushdef([tmpmacro],
-	  [AS_ESCAPE(m4_dquote([m4_define([AT_PACKAGE_$1],
-          ]m4_dquote(m4_defn([AC_PACKAGE_$1]))[)]),["\$`"])])
+dnl which reads package.m4
+m4_pushdef([tmpmacro],[_$0([$1],m4_defn([AC_PACKAGE_$1]))])
+m4_pushdef([_tmpmacro],[AS_ESCAPE([[m4_define([AT_PACKAGE_$1],
+          [$2])]],["\$`"])])
 m4_syscmd([printf %s\\n] m4_map_args_sep(["tmpmacro(],[)"],[ ],
-[NAME],[TARNAME],[VERSION],[STRING],[BUGREPORT],[URL]) [>package.m4])
+[NAME],[TARNAME],[VERSION],[STRING],[BUGREPORT],[URL])[ >package.m4])
 m4_popdef([tmpmacro])
+m4_popdef([_tmpmacro])
 
 AC_CONFIG_SRCDIR([src/midwife.cpp])
 AM_INIT_AUTOMAKE([subdir-objects])
