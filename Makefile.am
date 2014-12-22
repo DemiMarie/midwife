@@ -28,5 +28,5 @@ src/lexer.cpp: src/lexer.cpp.in
 check:
 	'@srcdir@/tests/testsuite'
 
-installcheck:
+installcheck-local:
 	'@srcdir@/tests/testsuite' 'midwife_bindir=$(bindir)'
