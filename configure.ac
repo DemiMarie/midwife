@@ -39,23 +39,16 @@ AC_TYPE_SIZE_T
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([strstr strtoul])
 
-AC_ARG_WITH([re2c],
-  [AS_HELP_STRING([--with-re2c],
-     [name of the re2c program to use @<:@default=re2c@:>@])],
-  [],
-  [with_re2c=re2c])
+AC_ARG_VAR([re2c],
+           [name of the re2c program to use @<:@default=re2c@:>@])
 
-AS_IF(["$with_re2c" -v 2>&1 | grep re2c >/dev/null],
-  [],
-  [AC_MSG_WARN([['re2c not found, changes to src/lexer.cpp.in ignored']])])
-
-AS_IF([test "x$with_re2c" = 'xno'],
-  [re2c=false],
-  [RE2C=$with_re2c])
-
-AC_SUBST([re2c])
-
-
+AC_MSG_CHECKING([[for which re2c to use]])
+test "${re2c+set}" = 'set' || re2c=re2c
+AS_IF(["$re2c" -v 2>&1 | grep re2c >/dev/null],
+  [AS_ECHO(["$re2c"])],
+  [AC_MSG_WARN([['
+re2c not found, changes to src/lexer.cpp.in ignored']])
+  [re2c=false]])
 
 # Initialize testsuite
 AC_CONFIG_TESTDIR([.])
