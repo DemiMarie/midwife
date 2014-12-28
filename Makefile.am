@@ -1,15 +1,19 @@
 # @configure_input@
-bin_PROGRAMS= midwife
-midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp 
-EXTRA_DIST=src/lexer.cpp src/lexer.cpp.in tests/testsuite.at \
-	   tests/testsuite
+bin_PROGRAMS=midwife
+midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp
 DISTCLEANFILES=testsuite.log atlocal atconfig
-MAINTAINERCLEANFILES=src/lexer.cpp tests/test configure Makefile.in \
+MAINTAINERCLEANFILES=@srcdir@/src/lexer.cpp configure Makefile.in \
 		     aclocal.m4 package.m4
-AM_CPPFLAGS ='-I@srcdir@/src'
+EXTRA_DIST=src/lexer.cpp.in tests/testsuite.at \
+	   tests/testsuite $(MAINTAINERCLEANFILES)
+AM_CPPFLAGS='-I@srcdir@/src'
 
-clean-local: clean-local-lexer
-.PHONY: clean-local-lexer
+RE2C = @re2c@
+
+
+clean-local: clean-local-lexer clean-local-testsuite
+
+.PHONY: clean-local-lexer clean-local-testsuite
 
 # Do not delete src/lexer.cpp if the user could not recreate it
 clean-local-lexer:
@@ -17,9 +21,13 @@ clean-local-lexer:
 	  rm -f src/lexer.cpp; \
 	fi
 
-src/lexer.cpp: src/lexer.cpp.in
-	if re2c -v 2>&1 | grep re2c >/dev/null; then \
-	  re2c -o src/lexer.cpp '@srcdir@/src/lexer.cpp.in'; \
+clean-local-testsuite:
+	rm -rf testsuite.dir
+
+@srcdir@/src/lexer.cpp: src/lexer.cpp.in
+	if $(RE2C) -v 2>&1 | grep re2c >/dev/null; then\
+	  $(RE2C) -o '@srcdir@/src/lexer.cpp' \
+	  '@srcdir@/src/lexer.cpp.in'; \
 	else \
 	  printf "WARNING: re2c not found.\\n\
 	Changes in lexer.cpp.in ignored\\n" >&2; \
