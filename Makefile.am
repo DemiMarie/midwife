@@ -2,18 +2,24 @@
 bin_PROGRAMS=midwife
 midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp
 DISTCLEANFILES=testsuite.log atlocal atconfig
-MAINTAINERCLEANFILES=@srcdir@/src/lexer.cpp configure Makefile.in \
-		     aclocal.m4 package.m4
+MAINTAINERCLEANFILES=@srcdir@/src/lexer.cpp aclocal.m4 package.m4
 EXTRA_DIST=src/lexer.cpp.in tests/testsuite.at \
 	   tests/testsuite $(MAINTAINERCLEANFILES)
 AM_CPPFLAGS='-I@srcdir@/src'
 
 RE2C = @re2c@
 
+maintainer-clean-local:
+	rm -f -- $(DIST_ARCHIVES)
 
 clean-local: clean-local-lexer clean-local-testsuite
 
-.PHONY: clean-local-lexer clean-local-testsuite
+.PHONY: clean-local-lexer clean-local-testsuite clobber
+
+clobber: maintainer-clean
+	@printf 'To rebuild, run ./autogen.sh'
+	rm -f configure Makefile.in
+
 
 # Do not delete src/lexer.cpp if the user could not recreate it
 clean-local-lexer:
