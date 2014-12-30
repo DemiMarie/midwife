@@ -3,8 +3,8 @@
 # Quadrigraphs will be processed by Autotest,
 # which reads package.m4
 m4_define([_MIDWIFE_PACKAGE_M4],
-[_$0([AT_PACKAGE_$1], m4_defn([AC_PACKAGE_$1]))])
-m4_define([__MIDWIFE_PACKAGE_M4],
+[$0_([AT_PACKAGE_$1], m4_defn([AC_PACKAGE_$1]))])
+m4_define([_MIDWIFE_PACKAGE_M4_],
           [[[m4_define([$1],
           [$2])]]dnl
 ])dnl
