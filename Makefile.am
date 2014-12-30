@@ -7,7 +7,7 @@ EXTRA_DIST=src/lexer.cpp.in tests/testsuite.at \
 	   tests/testsuite $(MAINTAINERCLEANFILES)
 AM_CPPFLAGS='-I@srcdir@/src'
 
-RE2C = @re2c@
+RE2C = @RE2C@
 
 maintainer-clean-local:
 	rm -f -- $(DIST_ARCHIVES)
@@ -17,7 +17,7 @@ clean-local: clean-local-lexer clean-local-testsuite
 .PHONY: clean-local-lexer clean-local-testsuite clobber
 
 clobber: maintainer-clean
-	@printf 'To rebuild, run ./autogen.sh'
+	@printf 'To rebuild, run ./autogen.sh\n'
 	rm -f configure Makefile.in
 
 
