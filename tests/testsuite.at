@@ -7,8 +7,13 @@ AT_COLOR_TESTS
 
 AT_BANNER([[Initial test group]])
 AT_SETUP([[Basic file test]])
+AS_CASE([${midwife_bindir-.}],
+        [/*/], [midwife_abspath=${midwife_bindir}midwife],
+        [/*],  [midwife_abspath=${midwife_bindir}/midwife],
+        [*/],  [midwife_abspath=../../${midwife_bindir}midwife],
+	[midwife_abspath=../../${midwife_bindir}/midwife])
 { 
-[printf '@%:@! %s -n2\n;; -*-"' "${midwife_bindir-../..}/midwife"
+[printf '@%:@! %s -n2\n;; -*-"' "${midwife_abspath}"
 which printf | sed 's/[\\"$]/\\&/g
 $ !s/$/\\n/
 ' | tr -d '\n'
