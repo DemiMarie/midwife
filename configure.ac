@@ -23,6 +23,10 @@ AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_CC
 AM_PROG_CC_C_O
+AX_WITH_PROG([RE2C], [re2c], [re2c])
+test "x$RE2C" != xno ||
+	AC_MSG_WARN([[re2c not found, changes to src/lexer.cpp.in ignored]])
+AM_CONDITIONAL([HAS_RE2C], [test "x$RE2C" != xno])
 
 # Checks for libraries.
 
@@ -38,9 +42,6 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([strstr strtoul])
-
-# Check for re2c
-AX_WITH_PROG([RE2C], [re2c], [re2c])
 
 # Initialize testsuite
 AC_CONFIG_TESTDIR([.])
