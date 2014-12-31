@@ -13,7 +13,6 @@ int int_of_octal (char * arg) {
           + 8*(static_cast<int>(arg[1])
                + 8 * static_cast<int>(*arg))) - 73 * '0';
 }
-//#define YYFILL(n) die("internal error (this is a bug)\n");
 /*!re2c
   re2c:define:YYCTYPE     = "char";
   re2c:define:YYCURSOR    = input;
