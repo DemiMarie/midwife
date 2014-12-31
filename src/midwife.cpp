@@ -150,6 +150,16 @@ int main(int argc, char **argv) {
   char * dest[128];
   char **buffer;
   program_name = argv[0];
+  {
+    char * index = program_name + strlen(program_name) - 1;
+    if ('2' <= *index && '9' >= *index) {
+      if (argc < 2) { 
+        usage(); 
+        return 127;
+      }
+      parseLines(index, argc - 1, argv + 1);
+    }
+  }
   size_t bufsize;
   if (argc < 3) {
     usage();
