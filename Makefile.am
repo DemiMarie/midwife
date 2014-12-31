@@ -21,8 +21,7 @@ if HAS_RE2C
 CLEANFILES=@srcdir@/src/lexer.cpp
 
 @srcdir@/src/lexer.cpp: src/lexer.cpp.in
-	. '@top_srcdir@/missing' '@RE2C@' -o '@srcdir@/src/lexer.cpp' \
-	'@srcdir@/src/lexer.cpp.in'
+	@RE2C@ -o '@srcdir@/src/lexer.cpp' '@srcdir@/src/lexer.cpp.in'
 endif
 
 check:
