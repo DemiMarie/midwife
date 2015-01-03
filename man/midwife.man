@@ -1,0 +1,21 @@
+
+.\" Man page for midwife
+.TH midwife 1 "02 January 2015" "Midwife"
+.SH NAME
+midwife \- invoke the appropriate interpreter in a shebang script
+.SH SYNOPSIS
+.B
+midwife
+.RI
+.I percent\-encoded\-argument filename [arguments-to-command] ...
+
+
+.\" Local Variables:
+.\" eval: (add-hook 'write-file-functions 'time-stamp)
+.\" eval: (add-hook 'before-save-hook 'time-stamp nil t)
+.\" eval: (add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
+.\" time-stamp-start: ".TH midwife 1 \""
+.\" time-stamp-format: "%02d %:b %:y"
+.\" time-stamp-end: "\""
+.\" mode: nroff
+.\" End:
