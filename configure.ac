@@ -23,6 +23,7 @@ AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_CC
 AM_PROG_CC_C_O
+AC_PROG_LN_S
 
 RE2C=
 AX_WITH_PROG([RE2C], [re2c])
@@ -30,19 +31,13 @@ AM_CONDITIONAL([HAS_RE2C],[("$RE2C" /dev/null ) >/dev/null 2>&1])
 case $RE2C in @%:@(
 '') AC_MSG_WARN([[re2c not found, changes to src/lexer.cpp.in ignored]])
 false ;; @%:@(
-*["'\$"]*) RE2C=`printf '%s\\n' "$RE2C" | sed -e "s/'/'\\\\\\\\''/g" \
--e 's/\\$/$$/g'` ;; @%:@(
+*["'\$$as_nl"]*) AC_MSG_ERROR([[unsafe path to re2c: $RE2C]]) ;;
 *) : ;;
 esac
 
 RE2C="'${RE2C-re2c}'"
 
 # Checks for libraries.
-
-# Checks for header files.
-AC_CHECK_HEADERS([cassert cerrno climits cstdio \
-cstdlib cstring errno.h stdio.h stdlib.h string \
-string.h unistd.h vector])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_OFF_T
