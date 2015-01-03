@@ -5,24 +5,27 @@ Licensed under the MIT license; see COPYING for its terms.]])
 
 AT_COLOR_TESTS
 
-AT_BANNER([[Initial test group]])
-AT_SETUP([[Basic file test]])
-AS_CASE([${midwife_bindir-.}],
-        [/*/], [midwife_abspath=${midwife_bindir}midwife],
-        [/*],  [midwife_abspath=${midwife_bindir}/midwife],
-        [*/],  [midwife_abspath=../../${midwife_bindir}midwife],
-	[midwife_abspath=../../${midwife_bindir}/midwife])
-{ 
-[printf '@%:@! %s -n2\n;; -*-"' "${midwife_abspath}"
-which printf | sed 's/[\\"$]/\\&/g
-$ !s/$/\\n/
-' | tr -d '\n'
-} > script
-chmod u+x script]
-AS_ECHO([['"  "%s" "aasdf\n\x0ad\012aa\na" -*- a']]) >> [script]
-AT_CHECK([[./script]],[0],[[aasdf
+m4_define([expected_output],[aasdf
 
 d
 aa
-a]],[])
+a])
+AT_BANNER([[Initial test group]])
+AT_SETUP([[Basic file test]])
+cat >script <<EOF
+@%:@! ${midwife_bindir=../..}/midwife -n2
+;; -*-`which printf`  "%s" "aasdf\\n\\x0ad\\012aa\\na" -*- a
+EOF
+chmod u+x script
+AT_CHECK([./script],[0],m4_defn([expected_output]))
+AT_CLEANUP
+
+AT_SETUP([[midwife3 test]])
+cat >script <<EOF
+@%:@! ${midwife_bindir=../..}/midwife3
+;;
+;; -*-`which printf`  "%s" "aasdf\\n\\x0ad\\012aa\\na" -*- a
+EOF
+chmod u+x script
+AT_CHECK([./script],[0],m4_defn([expected_output]))
 AT_CLEANUP
