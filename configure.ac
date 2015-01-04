@@ -25,17 +25,18 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_LN_S
 
-RE2C=
 AX_WITH_PROG([RE2C], [re2c])
-AM_CONDITIONAL([HAS_RE2C],[("$RE2C" /dev/null ) >/dev/null 2>&1])
-case $RE2C in @%:@(
-'') AC_MSG_WARN([[re2c not found, changes to src/lexer.cpp.in ignored]])
-false ;; @%:@(
-*["'\$$as_nl"]*) AC_MSG_ERROR([[unsafe path to re2c: $RE2C]]) ;;
-*) : ;;
-esac
 
-RE2C="'${RE2C-re2c}'"
+if "${RE2C-false}" /dev/null >/dev/null 2>&1; then
+  has_re2c=:
+else
+  AC_MSG_WARN([[re2c not found, changes to src/lexer.cpp.in ignored]])
+  has_re2c=false
+fi
+AS_CASE([[${RE2C=./missing}]],
+        [[*["'\$$as_nl"]*]], [AC_MSG_ERROR([[unsafe path to re2c: $RE2C]])],
+        [:])
+AM_CONDITIONAL([HAS_RE2C],["$has_re2c"])
 
 # Checks for libraries.
 
