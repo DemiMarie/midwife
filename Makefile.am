@@ -8,7 +8,6 @@ EXTRA_DIST=@top_srcdir@/src/lexer.cpp.in tests/testsuite.at \
 	   autogen.sh $(MAINTAINERCLEANFILES)
 AM_CPPFLAGS='-I@top_srcdir@/src'
 
-midwife3: midwife3$(EXEEXT)
 midwife3$(EXEEXT): midwife$(EXEEXT)
 	cp -p 'midwife$(EXEEXT)' 'midwife3$(EXEEXT)'
 
