@@ -1,12 +1,11 @@
-#include "lexer.hpp"
+#include "src/lexer.hpp"
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <cstring>
 #include <cerrno>
 #include <cassert>
 #include <cstdio>
 #include <climits>
+#include <cstdlib>
 int int_of_octal (char * arg);
 int int_of_octal (char * arg) {
   return (static_cast<int>(arg[2])
@@ -16,7 +15,6 @@ int int_of_octal (char * arg) {
 /*!re2c
   re2c:define:YYCTYPE     = "char";
   re2c:define:YYCURSOR    = input;
-  re2c:define:YYLIMIT     = end;
   re2c:define:YYMARKER    = marker;
   re2c:define:YYCTXMARKER = yymarker;
   re2c:indent:top         = 1;
@@ -31,12 +29,9 @@ bool error(const char *msg) {
 using std::string;
 stringVector lexer (char *input, size_t length,
                     size_t argc, char ** argv);
-stringVector lexer (char *input, size_t length,
-                    size_t argc, char ** argv) {
-  //fputs(input, stderr);
+stringVector lexer (char *input, size_t argc, char ** argv) {
   stringVector buffer = std::vector<string>();
   string *ptr = buffer.data();
-  const char *const end = input + length;
   bool split = true;
 
   // The wierd values are to force a segfault if the pointers
@@ -44,21 +39,22 @@ stringVector lexer (char *input, size_t length,
   char *marker = (char *)0xAEFDC,
       *yymarker = (char *) 0xAEFDC;
   while (true) {
+    char *token = input;
     /*!re2c
     "\\x"[0-9a-fA-F][0-9a-fA-F] {
       const char temp = *input;
       *input = '\0';
-      unsigned long i = strtoul(input - 2, 0, 16);
+      unsigned long i = strtoul(token + 2, 0, 16);
       ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
       *input = temp;
       continue;
     }
     "\\" [0-3][0-7][0-7] {
-      int i = int_of_octal(input - 3);
+      int i = int_of_octal(token + 1);
       ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
       continue;
     }
-    "\\" [$"\\]  { ptr->push_back(input[1]); continue; }
+    "\\" [$"\\]  { ptr->push_back(token[1]); continue; }
     "\\n"      { ptr->push_back('\n'); continue; }
     "\\t"      { ptr->push_back('\t'); continue; }
     "\\v"      { ptr->push_back('\v'); continue; }
@@ -68,16 +64,32 @@ stringVector lexer (char *input, size_t length,
     "\\b"      { ptr->push_back('\b'); continue; }
     "${"[0-9]+"}" {
       errno = 0;
-      unsigned long value = strtoul((char *)input + 2, 0, 10);
+      unsigned long value = strtoul(token + 2, 0, 10);
       if (0 == errno && argc > value) {
         ptr->operator += (argv[value]);
       }
       continue;
     }
     "$"[0-9] {
-      unsigned char value = input[1] - '0';
+      unsigned char value = token[1] - '0';
       if (argc > value) {
         ptr->operator += (argv[value]);
+      }
+      continue;
+    }
+    "$"[A-Za-z_][0-9A-Za-z_]* {
+      const char temp = *input;
+      *input = '\0';
+      if (char * value = getenv(token + 1)) {
+        ptr->operator += (value);
+      }
+      *input = temp;
+      continue;
+    }
+    "${"[A-Za-z_][0-9A-Za-z_]*"}" {
+      input[-1] = '\0';
+      if (char * value = getenv(token + 2)) {
+        ptr->operator += (value);
       }
       continue;
     }
@@ -90,7 +102,7 @@ stringVector lexer (char *input, size_t length,
       continue;
     }
     [$\\] {
-      error(input);
+      error(token);
     }
     "\"" {
       split = ~split;
@@ -100,7 +112,7 @@ stringVector lexer (char *input, size_t length,
       if (split) {
         return buffer;
       } else {
-        error(input);
+        error(token);
       }
     }
 
@@ -117,7 +129,7 @@ stringVector lexer (char *input, size_t length,
       if (!split) { ptr->push_back(yych); }
       continue;
     }
-    [^] { ptr->push_back(yych); continue; }
+    * { ptr->push_back(yych); continue; }
     */
   }
 }
