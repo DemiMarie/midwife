@@ -7,25 +7,24 @@ AT_COLOR_TESTS
 
 m4_define([expected_output],[aasdf
 
-d
+alphabravod
 aa
 a])
 AT_BANNER([[Initial test group]])
 AT_SETUP([[Basic file test]])
-cat >script <<EOF
-@%:@! ${midwife_bindir=../..}/midwife -n2
-;; -*-`which printf`  "%s" "aasdf\\n\\x0ad\\012aa\\na" -*- a
-EOF
+printf '@%:@! %s/midwife -n2\n%s\n' "${midwife_bindir=../..}" \
+';; -*-printf "%s" "aasdf\n\x0a${ad}$1d\012aa\na" -*- a' > script
 chmod u+x script
-AT_CHECK([./script],[0],m4_defn([expected_output]))
+AT_CHECK([[ad=alpha ./script bravo]],[0],m4_defn([expected_output]))
 AT_CLEANUP
 
 AT_SETUP([[midwife3 test]])
-cat >script <<EOF
+cat > script <<EOF
 @%:@! ${midwife_bindir=../..}/midwife3
 ;;
-;; -*-`which printf`  "%s" "aasdf\\n\\x0ad\\012aa\\na" -*- a
+;; -*-printf "%s" "aasdf\\n\\x0a\$ad\${1}d\\012aa\\na" -*- a
 EOF
 chmod u+x script
-AT_CHECK([./script],[0],m4_defn([expected_output]))
+/bin/time sh -c 'for i in `seq 1000`; do ad=alpha ./script bravo; done' 2>/dev/tty
+AT_CHECK([[ad=alpha ./script bravo]],[0],m4_defn([expected_output]))
 AT_CLEANUP
