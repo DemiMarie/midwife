@@ -1,0 +1,113 @@
+.TH midwife 1 "2015 January 04" "Midwife"
+.SH NAME
+midwife \- invoke the appropriate interpreter in a shebang script
+.de1 USE end
+.  BI \\$@
+.  br
+.end
+.de1 ARG end
+.  HP
+.  BI \\$@
+.  br
+.end
+.SH SYNOPSIS
+.USE midwife " [%\-encoded\~argument] [SCRIPTFILE] [arguments-to-command]"
+.USE midwife\~-n "j filename [arguments-to-command]"
+.USE midwife3 " filename [arguments-to-command]"
+.SH DESCRIPTION
+The #! ("shebang") mechanism is extremely useful for creating scripts
+that can be executed via
+.BR execve (2),
+just like binary executables.
+However, it suffers from several limitations:
+.IP \(em
+Handling of whitespace in the argument to the interpreter is not
+portable: Darwin splits the argument on whitespace, while Linux does
+not.
+.IP \(em
+No arguments may be passed after the script name but before the
+script's arguments
+.IP \(em
+No way to interpolate the text of arguments in arguments provided to
+the command
+.P
+The usual solution to these problems is a shell script
+wrapper.
+However, this has its own problems:
+.IP \(em
+Shells are complicated programs.
+This makes them both potentially slow
+to invoke, and vulnerable to security vulnerabilities (see the
+"shellshock" bug in Bash).
+.IP \(em
+Using a shell script wrapper requires writing what is essentially a
+polyglot sript where one of the languages is the shell.
+This is clumsy and error-prone, and should not be needed anyway.
+.P
+Midwife is a solution to these problems.
+It has two operating modes:
+.IP \(em
+In the first mode, a URL-encoded argument list is supplied as the
+first command line argument.
+This list is URL-decoded by Midwife, and the resulting array of
+strings becomes the first command line arguments.
+It is followed by the filename of the script, and then the script's
+arguments.
+.IP \(em
+In the second mode, the first argument to Midwife is
+.RI -n j " where " j
+is the line number of the template for Midwife to use.
+The template line is the entire sequence of characters between the
+first and last appearences within it of
+.BR -*- ", not including the " -*- " sequences."
+It is passed a template containing a list of strings, into which
+variables are substituted.
+.P
+Specifically,
+.BI $ n
+and
+.BI ${ nnn }
+are both replaced by the
+.IR n th
+positional parameter, if
+.B n
+is an integer (or a single digit, in the first case).
+Otherwise, if n matches [A-Za-z_][0-9A-Za-z_]*, the replacement text
+is that of the environment variable $n if it exists, or the empty
+string otherwise.
+C-style escape sequences are interpreted.
+A dollar sign can be escaped by an unescaped backslash.
+Arguments are separated by whitespace, but this splitting can be
+suppressed by enclosing the string in double quotes.
+.P
+If the last character of argv[0] is a digit, Midwife automatically
+jumps to that line and uses the template found there.
+.SH OPTIONS
+These options are only recognized when argv[0] does not end with a
+digit.
+Otherwise, the last character of argv[0] is used as the line to read
+the template from.
+.ARG -n j
+Jump to the nth line of the file argument
+.ARG --help
+Display a short help and exit
+.ARG --version
+Display a version message and exit
+.SH ENVIRONMENT
+If the command name is not an absolute path, $PATH is searched for the
+executable using
+.BR execvp (1).
+.SH FILES
+.SH DIAGNOSTICS
+.SH BUGS
+Currently, Midwife is not aware of unicode.
+Please report any other bugs you find to <demetriobenour@gmail.com>
+\" Local Variables:
+\" eval: (add-hook 'write-file-functions 'time-stamp)
+\" eval: (add-hook 'before-save-hook 'time-stamp nil t)
+\" eval: (add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
+\" time-stamp-start: ".TH midwife 1 \""
+\" time-stamp-format: "%:y %:b %02d"
+\" mode: nroff
+\" mode: auto-fill
+\" End:
