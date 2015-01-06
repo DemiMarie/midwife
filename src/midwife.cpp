@@ -1,18 +1,15 @@
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include "config.h"
 #ifndef _POSIX_C_SOURCE
 # define _POSIX_C_SOURCE 200809L
 #endif
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <cstdio>
 #include <vector>
 #include <string>
-
-#include "lexer.hpp"
+#include <cstdlib>
+#include <cerrno>
+#include "src/lexer.hpp"
 
 
 void die(const char *arg) {
@@ -76,8 +73,7 @@ void launch (stringVector stringVect) {
     newargs[i] = stringVect[i].c_str();
   }
   newargs[end] = (char *)0;
-  //  debugPrint(newargs);
-  execv((const char *)newargs[0], (char * const *)newargs);
+  execvp((const char *)newargs[0], (char * const *)newargs);
   die("Failed to exec!\n");
 }
 void usage(void);
@@ -112,9 +108,8 @@ void parseLines (char * numLines, int argc, char **argv) {
   }
 
   size_t length;
-  off_t linesize;
   for (size_t i = 0; i < numlines; ++i) {
-    linesize = getline(&ptr, &length, fileptr);
+    getline(&ptr, &length, fileptr);
   }
   char *begin = strstr(ptr, "-*-");
   if (NULL == begin) {
@@ -138,7 +133,7 @@ void parseLines (char * numLines, int argc, char **argv) {
         case STAR_DASH:
           if ('-' == *i) {
             *i = '\0';
-            launch(lexer(begin, i - begin, argc, argv));
+            launch(lexer(begin, argc, argv));
           }
       }
     }
@@ -153,18 +148,39 @@ int main(int argc, char **argv) {
   {
     char * index = program_name + strlen(program_name) - 1;
     if ('2' <= *index && '9' >= *index) {
-      if (argc < 2) { 
-        usage(); 
+      if (argc) {
+        parseLines(index, argc - 1, argv + 1);
+      } else {
+        usage();
         return 127;
       }
-      parseLines(index, argc - 1, argv + 1);
+    } else {
+      switch (argc) {
+        case 2:
+          if (0 == strcmp(argv[1], "--help")) {
+            printf("Usage: %1$s [%%-encoded argument] [script] [script arguments]\n\
+       %1$s -n[0-9] [script] [script argument]\n\
+       %1$s --help\n\
+       %1$s --version\n\
+Run 'man midwife' for full documentation\n",
+                   argv[0]);
+            return 0;
+          } else if (0 == strcmp(argv[1], "--version")) {
+            puts(PACKAGE_STRING "\nCopyright 2014-2015 Demetrios Obenour\n\
+Report bugs to <" PACKAGE_BUGREPORT ">");
+            return 0;
+          }
+        case 0:
+        case 1:
+          usage();
+          return 127;
+          break;
+        default:
+          break;
+      }
     }
   }
   size_t bufsize;
-  if (argc < 3) {
-    usage();
-    return 127;
-  }
   size_t numextraargs = 1;
   {
     char *ptr = argv[1];
@@ -198,6 +214,6 @@ int main(int argc, char **argv) {
   }
   fflush(stderr);
   memcpy(buffer + numextraargs, argv + 2, sizeof(char *) * (argc - 1));
-  execv(buffer[0], buffer);
+  execvp(buffer[0], buffer);
   die("Failed to exec!\n");
 }
