@@ -2,11 +2,11 @@
 bin_PROGRAMS=midwife midwife3
 midwife_SOURCES=src/midwife.cpp src/lexer.cpp src/lexer.hpp
 nodist_midwife3_SOURCES=
+dist_man1_MANS=man/midwife.1
 DISTCLEANFILES=testsuite.log atlocal atconfig
 MAINTAINERCLEANFILES=aclocal.m4 package.m4 tests/testsuite
 EXTRA_DIST=@top_srcdir@/src/lexer.cpp.in tests/testsuite.at \
 	   autogen.sh $(MAINTAINERCLEANFILES)
-AM_CPPFLAGS='-I@top_srcdir@/src'
 
 midwife3$(EXEEXT): midwife$(EXEEXT)
 	cp -p 'midwife$(EXEEXT)' 'midwife3$(EXEEXT)'
