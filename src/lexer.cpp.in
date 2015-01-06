@@ -17,8 +17,8 @@ int int_of_octal (char * arg) {
   re2c:define:YYCURSOR    = input;
   re2c:define:YYMARKER    = marker;
   re2c:define:YYCTXMARKER = yymarker;
-  re2c:indent:top         = 1;
-  re2c:indent:string      = "    ";
+  re2c:indent:top         = 2;
+  re2c:indent:string      = "  ";
   re2c:yyfill:enable      = 0;
 */
 bool error(const char *msg);
@@ -27,110 +27,143 @@ bool error(const char *msg) {
   exit(127);
 }
 using std::string;
-stringVector lexer (char *input, size_t length,
-                    size_t argc, char ** argv);
-stringVector lexer (char *input, size_t argc, char ** argv) {
+stringVector lexer (bool isPercent, char *input,
+                    size_t argc, char ** argv) {
   stringVector buffer = std::vector<string>();
   string *ptr = buffer.data();
   bool split = true;
 
-  // The wierd values are to force a segfault if the pointers
-  // are dereferenced without re2c having initialized them
-  char *marker = (char *)0xAEFDC,
-      *yymarker = (char *) 0xAEFDC;
   while (true) {
-    char *token = input;
-    /*!re2c
-    "\\x"[0-9a-fA-F][0-9a-fA-F] {
-      const char temp = *input;
-      *input = '\0';
-      unsigned long i = strtoul(token + 2, 0, 16);
-      ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
-      *input = temp;
-      continue;
-    }
-    "\\" [0-3][0-7][0-7] {
-      int i = int_of_octal(token + 1);
-      ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
-      continue;
-    }
-    "\\" [$\"\\]  { ptr->push_back(token[1]); continue; }
-    "\\n"      { ptr->push_back('\n'); continue; }
-    "\\t"      { ptr->push_back('\t'); continue; }
-    "\\v"      { ptr->push_back('\v'); continue; }
-    "\\f"      { ptr->push_back('\f'); continue; }
-    "\\r"      { ptr->push_back('\r'); continue; }
-    "\\a"      { ptr->push_back('\a'); continue; }
-    "\\b"      { ptr->push_back('\b'); continue; }
-    "${"[0-9]+"}" {
-      errno = 0;
-      unsigned long value = strtoul(token + 2, 0, 10);
-      if (0 == errno && argc > value) {
-        ptr->operator += (argv[value]);
-      }
-      continue;
-    }
-    "$"[0-9] {
-      unsigned char value = token[1] - '0';
-      if (argc > value) {
-        ptr->operator += (argv[value]);
-      }
-      continue;
-    }
-    "$"[A-Za-z_][0-9A-Za-z_]* {
-      const char temp = *input;
-      *input = '\0';
-      if (char * value = getenv(token + 1)) {
-        ptr->operator += (value);
-      }
-      *input = temp;
-      continue;
-    }
-    "${"[A-Za-z_][0-9A-Za-z_]*"}" {
-      input[-1] = '\0';
-      if (char * value = getenv(token + 2)) {
-        ptr->operator += (value);
-      }
-      continue;
-    }
-    "$@" {
-      ptr->operator += (argv[0]);
-      for (size_t i = 1; i < argc; ++i) {
-        buffer.push_back(argv[i]);
-      }
-      ptr = &buffer.back();
-      continue;
-    }
-    [$\\] {
-      error(token);
-    }
-    "\"" {
-      split = ~split;
-      continue;
-    }
-    "\000" {
-      if (split) {
-        return buffer;
-      } else {
-        error(token);
-      }
-    }
+    if (isPercent) {
 
-    [ \t]/[^ \t\000] {
-      if (split) {
+      // The wierd values are to force a segfault if the pointers
+      // are dereferenced without re2c having initialized them
+      char *marker = reinterpret_cast<char *>(0xAEFDC);
+      char *token = input;
+      /*!re2c
+      "\000" { return buffer; }
+      "&" {
         buffer.push_back(string());
         ptr = &buffer.back();
-      } else {
-        ptr->push_back(*input);
+        continue;
       }
-      continue;
+      "+" { ptr->push_back(' '); continue; }
+      "%"[0-9a-fA-F][0-9a-fA-F] {
+        const char temp = *input;
+        *input = '\0';
+        unsigned long i = strtoul(token + 1, 0, 16);
+        ptr->push_back(static_cast<char>(i < CHAR_MAX ? i : i - UCHAR_MAX - 1));
+        *input = temp;
+        continue;
+      }
+      "%" { error(token); }
+      * { input = token; goto next; }
+      */
+    } else {
+      // The wierd values are to force a segfault if the pointers
+      // are dereferenced without re2c having initialized them
+      char *marker = reinterpret_cast<char *>(0xAEFDC),
+          *yymarker = reinterpret_cast<char *>(0xAEFDC);
+      char *token = input;
+      /*!re2c
+      "\"" {
+        split = ~split;
+        continue;
+      }
+      "\000" {
+        if (split) {
+          return buffer;
+        } else {
+          error(token);
+        }
+      }
+      [ \t]/[^ \t\000] {
+        if (split) {
+          buffer.push_back(string());
+          ptr = &buffer.back();
+        } else {
+          ptr->push_back(*input);
+        }
+        continue;
+      }
+      [ \t] {
+        if (!split) { ptr->push_back(yych); }
+        continue;
+      }
+      "\\x"[0-9a-fA-F][0-9a-fA-F] {
+        const char temp = *input;
+        *input = '\0';
+        unsigned long i = strtoul(token + 2, 0, 16);
+        ptr->push_back(static_cast<char>(i < CHAR_MAX ? i : i - UCHAR_MAX - 1));
+        *input = temp;
+        continue;
+      }
+      "\\" [0-3][0-7][0-7] {
+        int i = int_of_octal(token + 1);
+        ptr->push_back(static_cast<char>(i < CHAR_MAX ? i : i - UCHAR_MAX - 1));
+        continue;
+      }
+      "\\"[$\"\\]  { ptr->push_back(token[1]); continue; }
+      "\\n"      { ptr->push_back('\n'); continue; }
+      "\\t"      { ptr->push_back('\t'); continue; }
+      "\\v"      { ptr->push_back('\v'); continue; }
+      "\\f"      { ptr->push_back('\f'); continue; }
+      "\\r"      { ptr->push_back('\r'); continue; }
+      "\\a"      { ptr->push_back('\a'); continue; }
+      "\\b"      { ptr->push_back('\b'); continue; }
+      "\\" { error(token); }
+      * { input = token; goto next; }
+      */
     }
-    [ \t] {
-      if (!split) { ptr->push_back(yych); }
-      continue;
+    {
+   next:
+      // The wierd values are to force a segfault if the pointers
+      // are dereferenced without re2c having initialized them
+      char *marker = reinterpret_cast<char *>(0xAEFDC), *token = input;
+      /*!re2c
+      "${"[0-9]+"}" {
+        errno = 0;
+        unsigned long value = strtoul(token + 2, 0, 10);
+        if (0 == errno && argc > value) {
+          ptr->operator += (argv[value]);
+        }
+        continue;
+      }
+      "$"[0-9] {
+        unsigned char value = static_cast<unsigned char>(token[1] - '0');
+        if (argc > value) {
+          ptr->operator += (argv[value]);
+        }
+        continue;
+      }
+      "$"[A-Za-z_][0-9A-Za-z_]* {
+        const char temp = *input;
+        *input = '\0';
+        if (char * value = getenv(token + 1)) {
+          ptr->operator += (value);
+        }
+        *input = temp;
+        continue;
+      }
+      "${"[A-Za-z_][0-9A-Za-z_]*"}" {
+        input[-1] = '\0';
+        if (char * value = getenv(token + 2)) {
+          ptr->operator += (value);
+        }
+        continue;
+      }
+      "$@" {
+        ptr->operator += (argv[0]);
+        for (size_t i = 1; i < argc; ++i) {
+          buffer.push_back(argv[i]);
+        }
+        ptr = &buffer.back();
+        continue;
+      }
+      "$" { error(token); }
+      * { ptr->push_back(yych); continue; }
+      */
     }
-    * { ptr->push_back(yych); continue; }
-    */
   }
 }
 /*
