@@ -1,5 +1,6 @@
 #                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+# Copyright 2014-2015 Demetrios Obenour. Licensed under the MIT
+# license; see COPYING for its terms
 
 m4_include([m4/midwife_package.m4])
 AC_INIT([Midwife], [0.1.0], [demetriobenour@gmail.com],
