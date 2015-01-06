@@ -54,7 +54,7 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
       ptr->push_back(i < CHAR_MAX ? i : i - UCHAR_MAX - 1);
       continue;
     }
-    "\\" [$"\\]  { ptr->push_back(token[1]); continue; }
+    "\\" [$\"\\]  { ptr->push_back(token[1]); continue; }
     "\\n"      { ptr->push_back('\n'); continue; }
     "\\t"      { ptr->push_back('\t'); continue; }
     "\\v"      { ptr->push_back('\v'); continue; }
@@ -116,7 +116,7 @@ stringVector lexer (char *input, size_t argc, char ** argv) {
       }
     }
 
-    [ \t]/[^ \t\000] {     
+    [ \t]/[^ \t\000] {
       if (split) {
         buffer.push_back(string());
         ptr = &buffer.back();

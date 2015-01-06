@@ -12,7 +12,5 @@
 #include <string>
 NORETURN bool error(const char *msg);
 typedef std::vector<std::basic_string<char> > stringVector;
-stringVector lexer (char *input, size_t length,
-                    size_t argc, char ** argv);
-
+stringVector lexer (char *input, size_t argc, char ** argv);
 NORETURN void die (const char *arg);
