@@ -1,7 +1,4 @@
 #include "config.h"
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200809L
-#endif
 #include <cstring>
 #include <unistd.h>
 #include <cstdio>
@@ -18,6 +15,8 @@ void die(const char *arg) {
 }
 
 static char *program_name;
+
+#if 0
 int parseHex(char a);
 int parseHex(char a) {
   if ('0' <= a && a <= '9') {
@@ -29,40 +28,10 @@ int parseHex(char a) {
     int value = a - 'A';
     return value + 10;
   } else {
-    die("Bad %- escape\n");
+    die("Bad hex input escape\n");
   }
 }
-
-
-int parseArgs(char *string, char ** buffer, char *dest);
-int parseArgs(char *string, char ** buffer, char *dest) {
-  char *cursor = dest;
-  size_t numArg = 0;
-  const char *ptr = string;
-  buffer[numArg++] = dest;
-  while(true) {
-    char value = *ptr++;
-    int result;
-    switch (value) {
-      case '&': *cursor++ = '\0';
-        buffer[numArg++] = cursor;
-        break;
-      case '+': *cursor++ = ' ';
-        break;
-      case '%':
-        result = 16 * parseHex(*ptr++);
-        result += parseHex(*ptr++);
-        *cursor++ = (result > 127) ? result - 256 : result;
-        break;
-      case '\0':
-        *cursor = '\0';
-        buffer[numArg] = (char *)0;
-        return 0;
-      default: *cursor++ = value;
-        break;
-    }
-  }
-}
+#endif
 void debugPrint(const char ** buffer);
 
 NORETURN void launch (stringVector stringVect);
@@ -72,8 +41,9 @@ void launch (stringVector stringVect) {
   for (size_t i = 0; i < end; ++i) {
     newargs[i] = stringVect[i].c_str();
   }
-  newargs[end] = (char *)0;
-  execvp((const char *)newargs[0], (char * const *)newargs);
+  newargs[end] = 0;
+  //  debugPrint(newargs);
+  execvp(newargs[0], const_cast<char *const *>(newargs));
   die("Failed to exec!\n");
 }
 void usage(void);
@@ -92,8 +62,8 @@ void debugPrint(const char ** buffer) {
 enum state { NOTHING, DASH, STAR_DASH };
 NORETURN void parseLines (char * numLines, int argc, char **argv);
 void parseLines (char * numLines, int argc, char **argv) {
-  FILE *fileptr = fopen((char*)(argv[0]), "r");
-  if ((FILE*)0 == fileptr) {
+  FILE *fileptr = fopen(argv[0], "r");
+  if (NULL == fileptr) {
     die("Cannot open input file\n");
   }
   errno = 0;
@@ -133,7 +103,7 @@ void parseLines (char * numLines, int argc, char **argv) {
         case STAR_DASH:
           if ('-' == *i) {
             *i = '\0';
-            launch(lexer(begin, argc, argv));
+            launch(lexer(false, begin, static_cast<size_t>(argc), argv));
           }
       }
     }
@@ -142,8 +112,6 @@ void parseLines (char * numLines, int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-  char * dest[128];
-  char **buffer;
   program_name = argv[0];
   {
     char * index = program_name + strlen(program_name) - 1;
@@ -158,12 +126,12 @@ int main(int argc, char **argv) {
       switch (argc) {
         case 2:
           if (0 == strcmp(argv[1], "--help")) {
-            printf("Usage: %1$s [%%-encoded argument] [script] [script arguments]\n\
-       %1$s -n[0-9] [script] [script argument]\n\
-       %1$s --help\n\
-       %1$s --version\n\
+            printf("Usage: %s [%%-encoded argument] [script] [script arguments]\n\
+       %s -n[0-9] [script] [script argument]\n\
+       %s --help\n\
+       %s --version\n\
 Run 'man midwife' for full documentation\n",
-                   argv[0]);
+                   argv[0], argv[0], argv[0], argv[0]);
             return 0;
           } else if (0 == strcmp(argv[1], "--version")) {
             puts(PACKAGE_STRING "\nCopyright 2014-2015 Demetrios Obenour\n\
@@ -174,46 +142,14 @@ Report bugs to <" PACKAGE_BUGREPORT ">");
         case 1:
           usage();
           return 127;
-          break;
         default:
           break;
       }
     }
   }
-  size_t bufsize;
-  size_t numextraargs = 1;
-  {
-    char *ptr = argv[1];
-    char value;
-    if (0 == strncmp(ptr, "-n", 2)) {
-      parseLines(ptr + 2, argc - 2, argv + 2);
-    } else {
-      while ((value = *ptr++)) {
-        if ('&' == value) {
-          ++numextraargs;
-        }
-      }
-    }
-  }
-
-
-  /* Subtract one argument for our one name
-   * and another for the command string */
-  bufsize = (argc + numextraargs - 1);
-  buffer = bufsize <= 128 ? dest : (char**)calloc(bufsize, sizeof(char *));
-  if (0 == buffer) {
-    die("Error allocating memory\n");
+  if (0 == strncmp(argv[1], "-n", 2)) {
+    parseLines(argv[1] + 2, argc - 2, argv + 2);
   }
   /* Parse arguments */
-  {
-    char *result = argv[1];
-    int value = parseArgs(argv[1], buffer, result);
-    if (value) {
-      return value;
-    }
-  }
-  fflush(stderr);
-  memcpy(buffer + numextraargs, argv + 2, sizeof(char *) * (argc - 1));
-  execvp(buffer[0], buffer);
-  die("Failed to exec!\n");
+  launch(lexer(true, argv[1], static_cast<size_t>(argc), argv));
 }
