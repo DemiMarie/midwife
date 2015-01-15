@@ -7,23 +7,24 @@ AT_COLOR_TESTS
 
 m4_define([expected_output],[aasdf
 
-alphabravod
+alphabravo2d
 aa
 a])
+m4_divert([PREPARE_TESTS])dnl
+ad=alpha : "${midwife_bindir=$builddir}"
+m4_divert([KILL])
 AT_BANNER([[Initial test group]])
 AT_SETUP([[Basic file test]])
-printf '@%:@! %s/midwife -n2\n%s\n' "${midwife_bindir=../..}" \
-';; -*-printf "%s" "aasdf\n\x0a${ad}$1d\012aa\na" -*- a' > script
+AS_ECHO(["@%:@! $midwife_bindir/midwife -n2"'
+;; -*-printf "%s" "aasdf\n\x0a${ad}$][12d\012aa\na" -*- a'])> script
 chmod u+x script
-AT_CHECK([[ad=alpha ./script bravo]],[0],m4_defn([expected_output]))
+AT_CHECK([[./script bravo]],[0],m4_defn([expected_output]))
 AT_CLEANUP
 
 AT_SETUP([[midwife3 test]])
-cat > script <<EOF
-@%:@! ${midwife_bindir=../..}/midwife3
+AS_ECHO(["@%:@! $midwife_bindir/midwife3"'
 ;;
-;; -*-printf "%s" "aasdf\\n\\x0a\$ad\${1}d\\012aa\\na" -*- a
-EOF
+;; -*-printf "%s" "aasdf\n\x0a$ad${1}2d\012aa\na" -*- a'])>script
 chmod u+x script
-AT_CHECK([[ad=alpha ./script bravo]],[0],m4_defn([expected_output]))
+AT_CHECK([[./script bravo]],[0],m4_defn([expected_output]))
 AT_CLEANUP
