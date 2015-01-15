@@ -49,3 +49,7 @@ package.m4
 
 # Build directory
 build/
+_build/
+
+# Log files
+*.log
