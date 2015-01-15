@@ -57,7 +57,7 @@ stringVector lexer (bool isPercent, char *input,
         continue;
       }
       "%" { error(token); }
-      * { input = token; goto next; }
+      [^] { input = token; goto next; }
       */
     } else {
       // The wierd values are to force a segfault if the pointers
@@ -112,7 +112,7 @@ stringVector lexer (bool isPercent, char *input,
       "\\a"      { ptr->push_back('\a'); continue; }
       "\\b"      { ptr->push_back('\b'); continue; }
       "\\" { error(token); }
-      * { input = token; goto next; }
+      [^] { input = token; goto next; }
       */
     }
     {
@@ -161,7 +161,7 @@ stringVector lexer (bool isPercent, char *input,
         continue;
       }
       "$" { error(token); }
-      * { ptr->push_back(yych); continue; }
+      [^] { ptr->push_back(yych); continue; }
       */
     }
   }
