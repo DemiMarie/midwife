@@ -1,21 +1,19 @@
 .\" -*- coding: utf-8 -*-
 .\" Copyright (C) 2014-2015 Demetrios Obenour
 .\" Licensed under the MIT license; see COPYING for its terms
-.TH midwife 1 "2015 January 07" Midwife
+.TH midwife 1 "2015 January 19" Midwife
 .SH NAME
 midwife \- invoke the appropriate interpreter in a shebang script
-.mso www.tmac
+.if d mso .mso www.tmac
 .SH SYNOPSIS
-.BI midwife " [%\-encoded argument] [SCRIPTFILE] [arguments\-to\-command]"
+\fBmidwife\fI [%\-encoded argument] [SCRIPTFILE] [arguments\-to\-command]
 .br
-.BI "midwife \-n" "j filename [arguments\-to\-command]"
+\fBmidwife \-n\fIj filename [arguments\-to\-command]
 .br
-.BI midwife3 " filename [arguments\-to\-command]"
+\fBmidwife3 \fIfilename [arguments\-to\-command]\fR
 .SH DESCRIPTION
 The #! ("shebang") mechanism is extremely useful for creating scripts
-that can be executed via
-.BR execve (2),
-just like binary executables.
+that can be executed via \fBexecve\fR(2), just like binary executables.
 However, it suffers from several limitations:
 .IP \(em
 Handling of whitespace in the argument to the interpreter is not
@@ -28,14 +26,12 @@ script's arguments
 No way to interpolate the text of arguments in arguments provided to
 the command
 .P
-The usual solution to these problems is a shell script
-wrapper.
+The usual solution to these problems is a shell script wrapper.
 However, this has its own problems:
 .IP \(em
 Shells are complicated programs.
-This makes them both potentially slow
-to invoke, and vulnerable to security vulnerabilities (see the
-"shellshock" bug in Bash).
+This makes them both potentially slow to invoke, and vulnerable to
+security vulnerabilities (see the "shellshock" bug in Bash).
 .IP \(em
 Using a shell script wrapper requires writing what is essentially a
 polyglot sript where one of the languages is the shell.
@@ -52,44 +48,37 @@ It is followed by the filename of the script, and then the script's
 arguments.
 .IP \(em
 In the second mode, the first argument to Midwife is
-.BI \-n j
-.RI "where " j " is the line number of the template for Midwife to use."
+\fB\-n\fIj\fR where \fIj\fR is the line number of the template for
+Midwife to use.
 The template line is the entire sequence of characters between the
-first and last appearences within it of
-.BR \-*\- ", not including the " \-*\- " sequences."
+first and last appearences within it of \fB\-*\-\fR, not including the
+\fB\-*\-\fR sequences.
 It is passed a template containing a list of strings, into which
 variables are substituted.
 .P
-Specifically,
-.BI $ n
-and
-.BI ${ nnn }
-are both replaced by the
-.IR n "th positional parameter, if"
-.BR n "is an integer (or a single digit, in the first case)."
-.RB "Note that " $0 " is replaced by the script name."
-Otherwise, if n matches [A\-Za\-z_][0\-9A\-Za\-z_]*, the replacement text
-is that of the environment variable $n if it exists, or the empty
+Specifically, \fB$\fIn\fR and \fB${\fInnn\fB}\fR are both replaced by
+the \fIn\fRth positional parameter, if \fBn\fR is an integer (or a
+single digit, in the first case).
+Note that \fB$0\fR is replaced by the script name.
+Otherwise, if n matches [A\-Za\-z_][0\-9A\-Za\-z_]*, the replacement
+text is that of the environment variable $n if it exists, or the empty
 string otherwise.
 C\-style escape sequences are interpreted.
 A dollar sign can be escaped by an unescaped backslash.
 Arguments are separated by whitespace, but this splitting can be
 suppressed by enclosing the string in double quotes.
 .P
-If the last character of
-.B argv[0]
-is a digit, Midwife automatically jumps to that line and uses the
-template found there.
+If the last character of \fBargv[0]\fR is a digit, Midwife
+automatically jumps to that line and uses the template found there.
 .SH OPTIONS
-These options are only recognized when
-.B argv[0] " does not end with a digit."
+These options are only recognized when \fBargv[0]\fR does not end with
+a digit.
 Otherwise, the last character of argv[0] is used as the line to read
 the template from.
 .HP
 .BI \-n j
 .br
-Jump to the
-.IR n "th line of the file argument"
+Jump to the \fIn\fRth line of the file argument
 .HP
 .BI \-\-help
 .br
@@ -99,18 +88,15 @@ Display a short help and exit
 .br
 Display a version message and exit
 .SH ENVIRONMENT
-.BR execvp "(3) is used to execute the program."
-Thus, if the command name is not an absolute path, $PATH is searched for the
-executable.
+\fBexecvp\fR(3) is used to execute the program.
+Thus, if the command name is not an absolute path, $PATH is searched
+for the executable.
 .SH FILES
-.RB "If the last character of " argv[0] " is a digit"
-.IR j ", or the"
-.BI \-n j
-option is given, then the
-.IR n "th line of the next argument (first argument, if"
-.B argv[0]
-ends with a digit, or else second argument) is used as a template. It
-should be the script file.
+If the last character of \fBargv[0]\fR is a digit \fIj\fR, or the
+\fB\-n\fIj\fR option is given, then the \fIn\fRth line of the next
+argument (first argument, if \fBargv[0]\fR ends with a digit, or else
+second argument) is used as a template.
+It should be the script file.
 .SH DIAGNOSTICS
 The diagnostics from Midwife should be self-explanitory.
 Please report it as a bug if they are not.
@@ -118,7 +104,7 @@ Please report it as a bug if they are not.
 Currently, Midwife is not aware of unicode.
 Please report any other bugs you find to
 .ie d URL .URL demetriobenour@gmail.com "Demetrios Obenour"
-.el Demetrios Obenour <demetriobenour@gmail.com>
+.el Demetrios Obenour <\fIdemetriobenour@gmail.com\fR>
 .\" Local Variables:
 .\" eval: (add-hook 'write-file-functions 'time-stamp)
 .\" eval: (add-hook 'before-save-hook 'time-stamp nil t)
