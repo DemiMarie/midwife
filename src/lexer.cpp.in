@@ -35,7 +35,7 @@ stringVector lexer (bool isPercent, char *input,
 
   while (true) {
     if (isPercent) {
-
+    percent:
       // The wierd values are to force a segfault if the pointers
       // are dereferenced without re2c having initialized them
       char *marker = reinterpret_cast<char *>(0xAEFDC);
@@ -45,9 +45,9 @@ stringVector lexer (bool isPercent, char *input,
       "&" {
         buffer.push_back(string());
         ptr = &buffer.back();
-        continue;
+        goto percent;
       }
-      "+" { ptr->push_back(' '); continue; }
+      "+" { ptr->push_back(' '); goto percent; }
       "%"[0-9a-fA-F][0-9a-fA-F] {
         const char temp = *input;
         *input = '\0';
@@ -60,6 +60,7 @@ stringVector lexer (bool isPercent, char *input,
       [^] { input = token; goto next; }
       */
     } else {
+    backslash:
       // The wierd values are to force a segfault if the pointers
       // are dereferenced without re2c having initialized them
       char *marker = reinterpret_cast<char *>(0xAEFDC),
@@ -68,7 +69,7 @@ stringVector lexer (bool isPercent, char *input,
       /*!re2c
       "\"" {
         split = ~split;
-        continue;
+        goto backslash;
       }
       "\000" {
         if (split) {
@@ -84,11 +85,11 @@ stringVector lexer (bool isPercent, char *input,
         } else {
           ptr->push_back(*input);
         }
-        continue;
+        goto backslash;
       }
       [ \t] {
         if (!split) { ptr->push_back(yych); }
-        continue;
+        goto backslash;
       }
       "\\x"[0-9a-fA-F][0-9a-fA-F] {
         const char temp = *input;
@@ -96,21 +97,21 @@ stringVector lexer (bool isPercent, char *input,
         unsigned long i = strtoul(token + 2, 0, 16);
         ptr->push_back(static_cast<char>(i < CHAR_MAX ? i : i - UCHAR_MAX - 1));
         *input = temp;
-        continue;
+        goto backslash;
       }
       "\\" [0-3][0-7][0-7] {
         int i = int_of_octal(token + 1);
         ptr->push_back(static_cast<char>(i < CHAR_MAX ? i : i - UCHAR_MAX - 1));
-        continue;
+        goto backslash;
       }
-      "\\"[$\"\\]  { ptr->push_back(token[1]); continue; }
-      "\\n"      { ptr->push_back('\n'); continue; }
-      "\\t"      { ptr->push_back('\t'); continue; }
-      "\\v"      { ptr->push_back('\v'); continue; }
-      "\\f"      { ptr->push_back('\f'); continue; }
-      "\\r"      { ptr->push_back('\r'); continue; }
-      "\\a"      { ptr->push_back('\a'); continue; }
-      "\\b"      { ptr->push_back('\b'); continue; }
+      "\\"[$\"\\]  { ptr->push_back(token[1]); goto backslash; }
+      "\\n"      { ptr->push_back('\n'); goto backslash; }
+      "\\t"      { ptr->push_back('\t'); goto backslash; }
+      "\\v"      { ptr->push_back('\v'); goto backslash; }
+      "\\f"      { ptr->push_back('\f'); goto backslash; }
+      "\\r"      { ptr->push_back('\r'); goto backslash; }
+      "\\a"      { ptr->push_back('\a'); goto backslash; }
+      "\\b"      { ptr->push_back('\b'); goto backslash; }
       "\\" { error(token); }
       [^] { input = token; goto next; }
       */
