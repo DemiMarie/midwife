@@ -9,30 +9,14 @@
 #include "src/lexer.hpp"
 
 
-void die(const char *arg) {
+static void die(const char *arg) {
   fputs(arg, stderr);
   exit(127);
 }
 
 static char *program_name;
 
-#if 0
-int parseHex(char a);
-int parseHex(char a) {
-  if ('0' <= a && a <= '9') {
-    return a - '0';
-  } else if ('a' <= a && a <= 'f') {
-    int value = a - 'a';
-    return value + 10;
-  } else if ('A' <= a && a <= 'F') {
-    int value = a - 'A';
-    return value + 10;
-  } else {
-    die("Bad hex input escape\n");
-  }
-}
-#endif
-void debugPrint(const char ** buffer);
+static void debugPrint(const char ** buffer);
 
 NORETURN void launch (stringVector stringVect);
 void launch (stringVector stringVect) {
@@ -46,12 +30,13 @@ void launch (stringVector stringVect) {
   execvp(newargs[0], const_cast<char *const *>(newargs));
   die("Failed to exec!\n");
 }
-void usage(void);
-void usage(void) {
+
+static void usage(void) {
   fprintf(stderr, "usage: %s (percent-encoded argument) filename ...\n",
           program_name);
 }
-void debugPrint(const char ** buffer) {
+
+static void debugPrint(const char ** buffer) {
   const char *string;
   while ((string = *buffer++)) {
     fputs(string, stderr);
@@ -134,7 +119,7 @@ Run 'man midwife' for full documentation\n",
                    argv[0], argv[0], argv[0], argv[0]);
             return 0;
           } else if (0 == strcmp(argv[1], "--version")) {
-            puts(PACKAGE_STRING "\nCopyright 2014-2015 Demetrios Obenour\n\
+            puts(PACKAGE_STRING "\nCopyright 2014-2015,2020 Demi Obenour\n\
 Report bugs to <" PACKAGE_BUGREPORT ">");
             return 0;
           }
